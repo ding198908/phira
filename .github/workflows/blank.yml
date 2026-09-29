@@ -1,0 +1,32 @@
+name: Unzip and Commit
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip file to root
+        run: |
+          # 解压压缩包
+          unzip -q phira-0.8.2.zip
+          
+          # 将解压出来的文件夹里的内容（包括隐藏文件）全部移动到当前根目录
+          # 假设压缩包解压出来的是一个名为 phira-0.8.2 的文件夹
+          mv phira-0.8.2/* . 2>/dev/null || true
+          mv phira-0.8.2/.* . 2>/dev/null || true
+          
+          # 删除空的文件夹和压缩包
+          rm -rf phira-0.8.2
+          rm phira-0.8.2.zip
+          
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Auto unzip phira-0.8.2.zip to root" || echo "No changes to commit"
+          git push
